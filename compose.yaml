@@ -1,0 +1,47 @@
+name: fitapp-rest-api
+
+services:
+  application:
+    build:
+      context: . # Local Dockerfile
+    networks:
+      - fitapp-network
+    environment:
+      - POSTGRES_URL=jdbc:postgresql://db:5432/fit-app
+    ports:
+      - 8080:8080
+
+  db:
+    image: postgres:18
+    restart: always
+    secrets:
+      - db-password
+    volumes:
+      - db-data:/var/lib/postgresql
+    networks:
+      - fitapp-network
+    environment:
+      - POSTGRES_DB=fit-app
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
+    ports:
+      - 5432:5432
+
+  pgAdmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=user@fitapp.ch
+      - PGADMIN_DEFAULT_PASSWORD=postgres
+    ports:
+      - 5050:80
+    networks:
+      - fitapp-network
+
+volumes:
+  db-data:
+secrets:
+  db-password:
+    file: secrets/postgres_password.txt
+networks:
+  fitapp-network:
+    external: true
