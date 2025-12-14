@@ -18,7 +18,7 @@ COPY src src/
 
 RUN --mount=type=cache,target=/root/.m2 \
   ./mvnw package -DskipTests && \
-  mv target/*jar target/app.jar
+  mv target/fitapp-1.0-SNAPSHOT.jar target/app.jar
 
 
 # ---------- runtime ----------
