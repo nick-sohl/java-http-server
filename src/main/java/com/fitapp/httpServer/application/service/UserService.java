@@ -1,33 +1,40 @@
 package com.fitapp.httpServer.application.service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.fitapp.httpServer.application.cqrs.command.CreateUserCommand;
-// application -> usecase
-import com.fitapp.httpServer.application.usecase.user.CreateUser;
-import com.fitapp.httpServer.application.usecase.user.FindUser;
-// domain -> entity
+import com.fitapp.httpServer.application.port.UserRepositoryInterface;
 import com.fitapp.httpServer.domain.entity.User;
 
+// TODO: Create DTO
 public class UserService {
-  // Reference Usecase
-  FindUser findUser;
-  CreateUser createUser;
+  UserRepositoryInterface userRepositoryInterface;
+  private static final AtomicInteger count = new AtomicInteger(0);
 
-  // Inject Usecase through Constructor
-  public UserService(CreateUser createUser, FindUser findUser) {
-    this.findUser = findUser;
-    this.createUser = createUser;
+  // The User Interface will be substituted by the
+  public UserService(UserRepositoryInterface userRepositoryInterface) {
+    this.userRepositoryInterface = userRepositoryInterface;
   }
 
-  // Usecases
+  // GET all uesr records
+  public List<User> findAllUsers() {
+    return userRepositoryInterface.findAllUsers();
+  }
+
   // GET user-record by id
-  public Optional<User> findUserById(int userId) {
-    return findUser.findUser(userId);
+  public Optional<User> findUserById(long userId) {
+    Optional<User> user = userRepositoryInterface.findUser(userId);
+    if (!user.isPresent()) {
+      throw new RuntimeException("No user found.");
+    }
+    return user;
   }
 
   // CREATE new user record
   public User createUser(CreateUserCommand command) {
+
     User user = new User(
         command.fname(),
         command.lname(),
@@ -35,6 +42,6 @@ public class UserService {
         command.age(),
         command.bodyHeight(),
         command.bodyWeight());
-    return createUser.createUser(user);
+    return userRepositoryInterface.createUser(user);
   }
 }

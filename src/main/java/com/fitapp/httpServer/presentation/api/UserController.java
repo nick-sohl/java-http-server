@@ -3,49 +3,85 @@ package com.fitapp.httpServer.presentation.api;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.List;
 
-import com.fitapp.httpServer.application.port.UserInterface;
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.fitapp.httpServer.application.service.UserService;
+import com.fitapp.httpServer.domain.entity.User;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 public class UserController implements HttpHandler {
-  UserInterface userInterface;
+  UserService userService;
+  ObjectMapper mapper = new ObjectMapper();
 
-  public UserController(UserInterface userInterface) {
-    this.userInterface = userInterface;
+  public UserController(UserService userService) {
+    this.userService = userService;
+  }
+
+  private List<User> findAllUsers() {
+    return userService.findAllUsers();
+  }
+
+  private String convertToJsonString(User user) throws JacksonException {
+    // Java Object -> JSON
+    String json = mapper.writeValueAsString(user);
+    return json;
+  }
+
+  private User convertToObject(String jsonString) throws JsonMappingException, JsonProcessingException {
+    // JSON -> Java Object
+    return mapper.readValue(jsonString, User.class);
   }
 
   @Override
   public void handle(HttpExchange exchange) throws IOException {
+
+    System.out.println("Handle Request USERCONTROLLER...");
     // Gathering Infos
     String method = exchange.getRequestMethod();
+    System.out.println("Request Method: " + method);
     Headers requestHeaders = exchange.getRequestHeaders();
     InputStream body = exchange.getRequestBody();
 
-    // Get the uri of the request to determine the userId -> /user/5
-    URI uri = exchange.getRequestURI();
-    String path = uri.getPath();
-
-    // Set Infors
     Headers responseHeaders = exchange.getResponseHeaders();
     responseHeaders.add("Server", "Nicks HTTP Server");
-    responseHeaders.add("Date", new Date().toString());
-    responseHeaders.add("Content-Type", "application/json");
+    responseHeaders.add("Content-Type", "application/json; charset=utf-8");
     responseHeaders.add("Access-Control-Allow-Origin", "*");
 
-    // TODO: Finish
-    if ("GET".equals(method)) {
-      exchange.sendResponseHeaders(200, userInterface.findUser(userId).getBytes().length);
-      OutputStream responseBody = exchange.getResponseBody();
-      responseBody.write(response.getBytes());
-      responseBody.close();
-      exchange.close();
+    if (!"GET".equals(method)) {
+      exchange.sendResponseHeaders(405, -1);
+      System.out.println("Request Failed.");
+      return;
     }
-  }
-  // define endpoint, handle http request, build http response
 
+    System.out.println("Get all Users via Service -> Adapter -> Repository from the DB.");
+    try {
+      List<User> users = findAllUsers();
+      String json = mapper.writeValueAsString(users);
+      byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+
+      exchange.sendResponseHeaders(200, bytes.length);
+      try (OutputStream os = exchange.getResponseBody()) {
+        os.write(bytes);
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      exchange.sendResponseHeaders(500, -1);
+    }
+
+    // for (User user : users) {
+    // System.out.println(user.getFname());
+    // System.out.println(convertToJsonString(user));
+    // String userJson = mapper.writeValueAsString(user);
+    // System.out.println(userJson);
+    // }
+  }
 }

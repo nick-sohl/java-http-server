@@ -1,0 +1,57 @@
+@startuml
+!theme vibrant
+
+package "com.sun.net.httpserver" {
+  interface HttpHandler
+}
+
+package "com.fitapp.httpServer.domain" {
+  package "entity" {
+    entity User
+  }
+  package "valueobject" {
+    entity Password <<Value Object>>
+  }
+}
+
+package "com.fitapp.httpServer.application" {
+  package "com.fitapp.httpServer.application.service" {
+    class UserService <<Service>>
+  }
+
+  package "usecase" {
+    class FindAllUsers
+    class FindUserById <<Use Case>>
+    class CreateUser <<Use Case>>
+    class UpdateUser
+    class DeleteUser
+  }
+  package "cqrs" {
+    record CreateUserCommand <<CQRS>>
+    record GetUserQuery <<CQRS>>
+    record GetAllUsersQuery <<CQRS>>
+  }
+  package "port" {
+    interface UserInterface <<Interface>>
+  }
+  package "adapter" {
+    class UserAdapter
+  }
+}
+
+package "com.fitapp.httpServer.infrastructure" {
+  package "persistence" {
+    class UserRepository <<Repository>>
+  }
+}
+
+package "com.fitapp.httpServer.presentation" {
+  package "controller" {
+  class UserController <<Controller>>
+  }
+}
+
+UserController <|.. HttpHandler : implements
+UserController --> UserInterface : depends on
+
+@enduml

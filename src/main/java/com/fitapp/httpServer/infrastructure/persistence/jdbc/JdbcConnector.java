@@ -22,6 +22,7 @@ public class JdbcConnector {
     this.DB_PASSWORD = builder.dbPassword;
   }
 
+  // jdbc:postgresql://db:5432/fit-app
   private final String buildUrl() {
     return PROTOCOL + "://" + HOST + ":" + PORT + "/" + DB_NAME;
   }
@@ -29,10 +30,11 @@ public class JdbcConnector {
   public Connection establishConnection() {
     String url = buildUrl();
     try {
-      return DriverManager.getConnection(url, DB_USER, DB_PASSWORD);
+      Connection connection = DriverManager.getConnection(url, DB_USER, DB_PASSWORD);
+      System.out.println("Connection Established! Meta-Data: " + connection.getMetaData());
+      return connection;
     } catch (SQLException e) {
-      System.out.print(e.getMessage());
-      return null;
+      throw new RuntimeException("Could not establish a connection to the Database");
     }
   }
 

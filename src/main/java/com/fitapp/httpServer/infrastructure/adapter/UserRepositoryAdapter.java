@@ -4,32 +4,31 @@ import java.util.List;
 import java.util.Optional;
 
 import com.fitapp.httpServer.application.cqrs.command.CreateUserCommand;
-import com.fitapp.httpServer.application.port.UserInterface;
+import com.fitapp.httpServer.application.port.UserRepositoryInterface;
 import com.fitapp.httpServer.domain.entity.User;
 import com.fitapp.httpServer.infrastructure.persistence.UserRepository;
 
-public class UserAdapter implements UserInterface {
+public class UserRepositoryAdapter implements UserRepositoryInterface {
   UserRepository userRepository;
 
   // Inject UserRepository
-  public UserAdapter(UserRepository userRepository) {
+  public UserRepositoryAdapter(UserRepository userRepository) {
     this.userRepository = userRepository;
   }
 
   @Override
-  public Optional<User> findUser(int userId) {
+  public Optional<User> findUser(long userId) {
     return userRepository.findUser(userId);
   }
 
   @Override
   public List<User> findAllUsers() {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'findAllUsers'");
+    return userRepository.findAllUsers();
   }
 
   @Override
-  public User createUser(CreateUserCommand command) {
-    userRepository.createUser(command);
+  public User createUser(User user) {
+    return userRepository.createUser(user);
   }
 
   @Override
