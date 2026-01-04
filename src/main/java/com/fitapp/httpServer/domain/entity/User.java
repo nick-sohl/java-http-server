@@ -24,7 +24,6 @@ public class User {
     this.bodyWeight = bodyWeight;
   }
 
-  // For new Users -> When we create a new User, we create the ID in Java
   public User(long userId, String fname, String lname, Password password, int age, int bodyHeight, int bodyWeight) {
     this.userId = userId;
     this.fname = fname;
