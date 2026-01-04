@@ -1,15 +1,16 @@
 name: fitapp-httpServer
 
 services:
-  # application:
-  #   build:
-  #     context: . # Local Dockerfile
-  #   networks:
-  #     - fitapp-network
-  #   environment:
-  #     - POSTGRES_URL=jdbc:postgresql://db:5432/fit-app
-  #   ports:
-  #     - 8080:8080
+  application:
+    build:
+      context: . # Local Dockerfile
+    networks:
+      - fitapp-network
+    environment:
+      - POSTGRES_URL=jdbc:postgresql://db:5432/fit-app
+    ports:
+      - 8000:8000
+      - 9010:9010
 
   db:
     image: postgres:18
@@ -37,9 +38,11 @@ services:
       - 5050:80
     networks:
       - fitapp-network
-
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
 volumes:
   db-data:
+  pgadmin-data:
 secrets:
   db-password:
     file: secrets/postgres_password.txt
@@ -48,4 +51,4 @@ networks:
     ipam:
       config:
         - subnet: 172.20.0.0/24
-    # external: true
+    external: true
